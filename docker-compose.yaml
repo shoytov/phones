@@ -1,0 +1,48 @@
+version: '3.7'
+
+services:
+  app:
+    container_name: app
+    build: .
+    restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - .:/app
+#    command: bash -c "uvicorn app.web:app --host 0.0.0.0 --port 8000 --workers 4"
+    command: bash -c "uvicorn app.web:app --host 0.0.0.0 --port 8000 --reload"
+
+  db:
+    restart: always
+    container_name: app-db
+    image: mongo:4.4
+    volumes:
+        - .data:/data/db
+    ports:
+        - "${MONGODB_PORT}:${MONGODB_PORT}"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+    command: '--bind_ip_all --port ${MONGODB_PORT}'
+
+  redis:
+    image: redis:6.2.6-alpine
+    container_name: app-redis
+    restart: always
+    volumes:
+      - .redis:/data
+
+  scheduler:
+    container_name: app-scheduler
+    build: .
+    restart: always
+    depends_on:
+      - app
+      - db
+      - redis
+    volumes:
+      - .:/app
+    command: bash -c "python /app/app/worker.py"
