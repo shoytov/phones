@@ -11,6 +11,7 @@ from app.core.logging import app_logger
 from app.core.settings import DEBUG, SERVICE_NAME, TAGS_METADATA, VERSION
 from app.domain.exceptions.base_exception import BaseDomainException
 from app.utils.init_cache import init_cache_redis
+from app.utils.init_db import connect_db
 
 
 def create_app() -> FastAPI:
@@ -25,7 +26,7 @@ def create_app() -> FastAPI:
 		redoc_url="/redoc" if DEBUG else None,
 		version=VERSION,
 		openapi_tags=TAGS_METADATA,
-		on_startup=(init_cache_redis,),
+		on_startup=(init_cache_redis, connect_db),
 	)
 
 	# Init app logger

@@ -10,12 +10,23 @@ class AbstractPhonesRegistry(ABC):
 		self.region_info_repository = region_info_repository
 
 	@abstractmethod
-	async def parse_data(self, url: Optional[str] = None):
+	async def process_file(self, filename: str):
 		"""
-		Обработка данных, точка входа.
+		Генератор, который отдает сформированную запись реестра.
 		"""
 		raise NotImplementedError()
 
 	@abstractmethod
 	async def get_links_for_parse(self, url: Optional[str] = None) -> List[str]:
+		"""
+		Получение данных для дальнейшего парсинга.
+		Возвращает список ссылок на файлы, которые содержат данные регистра.
+		"""
+		raise NotImplementedError()
+
+	@abstractmethod
+	async def download_file(self, link: str) -> str:
+		"""
+		Сохраняет файл, и возвращает имя файла.
+		"""
 		raise NotImplementedError()

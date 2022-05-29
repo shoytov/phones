@@ -3,18 +3,16 @@ import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.tasks import update_data
-from app.utils.init_cache import init_cache_redis
 
 
 async def init_scheduler() -> AsyncIOScheduler:
-	init_cache_redis()
 	scheduler = AsyncIOScheduler(timezone="UTC")
 
 	scheduler.add_job(
 		update_data,
 		trigger="cron",
-		hour=8,
-		minute=54
+		hour=13,
+		minute=21
 	)
 	scheduler.start()
 

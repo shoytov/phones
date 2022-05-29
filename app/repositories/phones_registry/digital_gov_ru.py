@@ -17,24 +17,7 @@ from .base import AbstractPhonesRegistry
 
 
 class DigitalGovRu(AbstractPhonesRegistry):
-	async def parse_data(self, url: Optional[str] = None):
-		"""
-		Генератор, который отдает сформированную запись реестра для добавления/обновления в бд.
-		"""
-		if not url:
-			raise ValidationException(msg="No url for parse")
-
-		links = await self.get_links_for_parse(url)
-
-		for link in links:
-			# скачиваем файлы
-			filename = await DigitalGovRu._download_file(link)
-
-			# возвращаем по одной обработанной записи из файла
-			async for processed_records in self._process_file(filename):
-				yield processed_records
-
-	async def _process_file(self, filename: str):
+	async def process_file(self, filename: str):
 		"""
 		Генератор, который читает файл и отдает сформированную запись реестра.
 		"""
@@ -79,8 +62,7 @@ class DigitalGovRu(AbstractPhonesRegistry):
 
 		return links
 
-	@staticmethod
-	async def _download_file(link: str) -> str:
+	async def download_file(self, link: str) -> str:
 		"""
 		Сохраняет файл, и возвращает имя файла.
 		"""

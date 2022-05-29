@@ -1,14 +1,8 @@
-import asyncio
 from typing import Tuple
 
 import pymongo
-from motor import motor_asyncio
 
 from app.core.settings import (
-	MONGODB_HOST,
-	MONGODB_PORT,
-	MONGODB_USER,
-	MONGODB_PASSWORD,
 	MONGODB_DB,
 	MONGO_DB_PHONES_REGISTRY_COLLECTION
 )
@@ -16,17 +10,17 @@ from app.domain.entities.phone_detail import PhoneDetail
 from app.domain.entities.phone_registry_record import PhoneRegistryRecord
 from app.domain.enums.error_code import ErrorCode
 from app.domain.exceptions.business_exception import BusinessException
+from app.utils.init_db import get_db_client
 from .base import AbstractDatabase
-
-loop = asyncio.get_event_loop()
 
 
 class MongoRepository(AbstractDatabase):
 	def __init__(self):
-		global loop
+		self.db = None
 
-		self.client = motor_asyncio.AsyncIOMotorClient(self.connection_string, io_loop=loop)
-		self.db = self.client[MONGODB_DB]
+	async def set_db(self):
+		db_client = get_db_client()
+		self.db = db_client[MONGODB_DB]
 
 		# создаем индексы
 		collection = self.db[MONGO_DB_PHONES_REGISTRY_COLLECTION]
@@ -39,20 +33,8 @@ class MongoRepository(AbstractDatabase):
 			unique=True
 		)
 
-	@property
-	def connection_string(self) -> str:
-		if MONGODB_USER and MONGODB_PASSWORD:
-			_connection_string = f"mongodb://{MONGODB_USER}:{MONGODB_PASSWORD}@{MONGODB_HOST}:{MONGODB_PORT}"
-		else:
-			_connection_string = f"mongodb://{MONGODB_HOST}:{MONGODB_PORT}"
-
-		return _connection_string
-
-	@connection_string.setter
-	def connection_string(self, value: str):
-		pass
-
 	async def get_number_info(self, number_parts: Tuple[str, str, str]) -> PhoneDetail:
+		await self.set_db()
 		collection = self.db[MONGO_DB_PHONES_REGISTRY_COLLECTION]
 
 		condition = {
@@ -81,6 +63,7 @@ class MongoRepository(AbstractDatabase):
 		)
 
 	async def insert_or_update_registry_record(self, data: PhoneRegistryRecord):
+		await self.set_db()
 		collection = self.db[MONGO_DB_PHONES_REGISTRY_COLLECTION]
 
 		condition = {
