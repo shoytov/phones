@@ -11,8 +11,8 @@ async def init_scheduler() -> AsyncIOScheduler:
 	scheduler.add_job(
 		update_data,
 		trigger="cron",
-		hour=13,
-		minute=21
+		hour=18,
+		minute=30
 	)
 	scheduler.start()
 
